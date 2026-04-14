@@ -8,19 +8,29 @@ import (
 )
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
-	repository := &TestRepository{}
-	service := &TestService{repository: *repository}
+	var repository MessageRepository
+	repository = &TestRepository{}
+	var service MessageService
+	service = &TestService{repository: repository}
 	
 	fmt.Fprint(w, service.GetMessage())
 }
 
+type MessageRepository interface {
+	GetMessage() string
+}
+
 type TestRepository struct{}
-	func (s *TestRepository) GetMessage() string {
+	func (r *TestRepository) GetMessage() string {
 		return "znayu ya chto porvetsa pizdyukha!"
 	}
 
+type MessageService interface {
+	GetMessage() string
+}
+
 type TestService struct{
-	repository TestRepository
+	repository MessageRepository
 }
 	func (s *TestService) GetMessage() string {
 		return s.repository.GetMessage()
