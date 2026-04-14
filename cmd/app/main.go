@@ -8,8 +8,23 @@ import (
 )
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "znayu ya chto porvetsa pizdyukha!")
+	repository := &TestRepository{}
+	service := &TestService{repository: *repository}
+	
+	fmt.Fprint(w, service.GetMessage())
 }
+
+type TestRepository struct{}
+	func (s *TestRepository) GetMessage() string {
+		return "znayu ya chto porvetsa pizdyukha!"
+	}
+
+type TestService struct{
+	repository TestRepository
+}
+	func (s *TestService) GetMessage() string {
+		return s.repository.GetMessage()
+	}
 
 func setupRoutes() {
 	http.HandleFunc("/test", testHandler)
