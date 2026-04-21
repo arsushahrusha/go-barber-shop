@@ -1,62 +1,22 @@
-# Binaries
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.bin
-*.out
-*.test
+package app
 
-# Build directories
-bin/
-dist/
-build/
+import (
+	"net/http"
+	deliveryhttp "my-go-server/internal/delivery/http"
+	"my-go-server/internal/delivery/http/handler"
+	repositorytest "my-go-server/internal/repository/test"
+	usecasetest "my-go-server/internal/usecase/test"
+)
 
-# Go workspace
-go.work
-go.work.sum
+func Run() {
+	repo := repositorytest.NewRepository()
+	service := usecasetest.NewService(repo)
+	handler := handler.NewHandler(service)
 
-# Coverage
-*.cover
-coverage.out
-cover.out
+	deliveryhttp.SetupRoutes(handler)
 
-# Profiling
-*.prof
-*.pprof
-
-# Vendor (игнорируй только если не коммитишь vendor)
-vendor/
-
-# Dependency directories
-.gomodcache/
-
-# IDE / Editors
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Logs
-*.log
-
-# Temporary files
-tmp/
-temp/
-
-# Test binary
-*.coverprofile
-
-# Air / live reload
-.air/
+	err := http.ListenAndServe(":8080", nil)
+	if err!=nil {
+		panic(err)
+	}
+}
