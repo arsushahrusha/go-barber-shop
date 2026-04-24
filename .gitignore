@@ -54,6 +54,7 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+temp*
 
 # Test binary
 *.coverprofile
