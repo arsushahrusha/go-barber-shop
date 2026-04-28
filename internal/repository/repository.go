@@ -9,3 +9,4 @@ func NewRepository() *Repository {
 func (r *Repository) GetMessage() string {
 		return "Hello!"
 	}
+	

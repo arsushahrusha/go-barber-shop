@@ -8,5 +8,6 @@ import (
 func SetupRoutes(handler *handler.Handler) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/test", handler.Handle)
+	mux.HandleFunc("/dbtest", handler.HandleDBTest)
 	return mux
 }

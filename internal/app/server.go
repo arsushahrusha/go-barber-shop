@@ -3,20 +3,53 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
+	"my-go-server/internal/config"
 	deliveryhttp "my-go-server/internal/delivery/http"
 	"my-go-server/internal/delivery/http/handler"
-	repositorytest "my-go-server/internal/repository/test"
+	"my-go-server/internal/repository"
+	database "my-go-server/internal/repository/db"
 	usecasetest "my-go-server/internal/usecase/test"
+	usecasedb "my-go-server/internal/usecase/db"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func Run() {
-	repo := repositorytest.NewRepository()
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("error loading env variables: %s", err.Error())
+	}
+
+	db, err := database.NewPostgresDB(config.Config{
+		Host: os.Getenv("DB_HOST"),
+		Port: os.Getenv("DB_PORT"),
+		Username: os.Getenv("DB_USER"),
+		DBName: os.Getenv("DB_NAME"),
+		SSLMode: os.Getenv("DB_SSLMODE"),
+		Password: os.Getenv("DB_PASSWORD"),
+	})
+
+	if err != nil {
+		log.Fatalf("failed to initialize db: %s", err.Error())
+	}
+
+	dbrepo := database.NewDBRepository(db)
+	
+	if err := dbrepo.InitTable(); err != nil {
+		log.Fatalf("error initializing test table: %s", err.Error())
+	}
+	dbservice := usecasedb.NewDBService(dbrepo)
+	defer db.Close()
+
+	repo := repository.NewRepository()
 	service := usecasetest.NewService(repo)
-	handler := handler.NewHandler(service)
+	handler := handler.NewHandler(service, dbservice)
+	 
 
 	srv := http.Server{
 		Addr: ":8080",
@@ -32,6 +65,7 @@ func Run() {
 		}
 	} ()
 	
+
 	shutdown, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 	<-shutdown.Done()
