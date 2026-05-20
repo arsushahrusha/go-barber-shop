@@ -2,12 +2,12 @@ package deliveryhttp
 
 import (
 	"net/http"
-	"my-go-server/internal/delivery/http/handler"
+	"my-go-server/internal/domain"
 )
 
-func SetupRoutes(handler *handler.Handler) http.Handler {
+func SetupRoutes(handler domain.Handler) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/test", handler.Handle)
-	mux.HandleFunc("/dbtest", handler.HandleDBTest)
+	mux.HandleFunc("/test", handler.Handle())
+	mux.HandleFunc("/dbtest", handler.HandleDBTest())
 	return mux
 }

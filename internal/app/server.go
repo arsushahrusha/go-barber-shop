@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"my-go-server/internal/config"
@@ -9,10 +10,8 @@ import (
 	"my-go-server/internal/delivery/http/handler"
 	"my-go-server/internal/repository"
 	database "my-go-server/internal/repository/db"
-	usecasetest "my-go-server/internal/usecase/test"
-	usecasedb "my-go-server/internal/usecase/db"
+	"my-go-server/internal/usecase"
 	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -25,43 +24,35 @@ func Run() {
 		log.Fatalf("error loading env variables: %s", err.Error())
 	}
 
-	db, err := database.NewPostgresDB(config.Config{
-		Host: os.Getenv("DB_HOST"),
-		Port: os.Getenv("DB_PORT"),
-		Username: os.Getenv("DB_USER"),
-		DBName: os.Getenv("DB_NAME"),
-		SSLMode: os.Getenv("DB_SSLMODE"),
-		Password: os.Getenv("DB_PASSWORD"),
-	})
+	cfg, err := config.New()
 
+	if err != nil {
+		log.Fatalf("failed to load config: %s", err.Error())
+	}
+
+	postgresDB, err := database.NewPostgresDB(cfg.DB)
 	if err != nil {
 		log.Fatalf("failed to initialize db: %s", err.Error())
 	}
+	defer postgresDB.Close()
 
-	dbrepo := database.NewDBRepository(db)
-	
-	if err := dbrepo.InitTable(); err != nil {
-		log.Fatalf("error initializing test table: %s", err.Error())
-	}
-	dbservice := usecasedb.NewDBService(dbrepo)
-	defer db.Close()
-
-	repo := repository.NewRepository()
-	service := usecasetest.NewService(repo)
-	handler := handler.NewHandler(service, dbservice)
+	dbrepo := database.NewDBRepository(postgresDB)
+	repo := repository.NewRepository(dbrepo)
+	uc := usecase.NewService(repo)
+	h := handler.NewHandler(uc)
 	 
 
 	srv := http.Server{
-		Addr: ":8080",
-		Handler: deliveryhttp.SetupRoutes(handler),
+		Addr: ":"+cfg.Server.Port,
+		Handler: deliveryhttp.SetupRoutes(h),
 	}
 
 
 	go func() {
-		fmt.Println("Listening on :8080")
-		err := srv.ListenAndServe()
-		if err!=nil {
-			fmt.Printf("Stopped listening: %v\n", err)
+		fmt.Printf("Listening on :%s\n", cfg.Server.Port)
+		
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("server error: %s", err.Error())
 		}
 	} ()
 	
@@ -75,6 +66,7 @@ func Run() {
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		fmt.Printf("Shutdown with error: %v", err)
+		return
 	}
 	fmt.Printf("Shutdown complete.")
 

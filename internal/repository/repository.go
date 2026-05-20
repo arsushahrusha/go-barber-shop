@@ -1,12 +1,23 @@
 package repository
 
-type Repository struct{}
+import (
+	"context"
+	dbrepo "my-go-server/internal/repository/db"
+)
 
-func NewRepository() *Repository {
-	return &Repository{}
+type Repository struct{
+	db *dbrepo.DBRepository
 }
 
-func (r *Repository) GetMessage() string {
-		return "Hello!"
+func NewRepository(db *dbrepo.DBRepository) *Repository {
+	return &Repository{db: db}
+}
+
+func (r *Repository) GetMessage(ctx context.Context) (string, error) {
+		return "Hello!", nil
 	}
+
+func (r *Repository) SaveMessage(ctx context.Context, value string) (int, error) {
+	return r.db.SaveMessage(ctx, value)
+}
 	
