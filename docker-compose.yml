@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: my_go_server_postgres
+    environment:
+      POSTGRES_DB: barbershop
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 9186
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/db/init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

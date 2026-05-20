@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS db_test (
+    id SERIAL PRIMARY KEY,
+    value TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
