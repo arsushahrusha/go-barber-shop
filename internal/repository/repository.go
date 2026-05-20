@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"my-go-server/internal/models"
 	dbrepo "my-go-server/internal/repository/db"
 )
 
