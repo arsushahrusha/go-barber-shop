@@ -8,7 +8,6 @@ import (
 	"time"
 	"errors"
 	"github.com/jmoiron/sqlx"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type DBRepository struct {
@@ -32,13 +31,8 @@ func (r *DBRepository) SaveMessage(ctx context.Context, value string) (int, erro
 }
 
 func (r *DBRepository) RegisterUser(ctx context.Context, login, password string) (*models.User, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %w", err)
-	}
-
 	var userID string
-	err = r.db.GetContext(ctx, &userID, registerUserQuery, login, hashedPassword)
+	err := r.db.GetContext(ctx, &userID, registerUserQuery, login, password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert user: %w", err)
 	}
@@ -46,7 +40,7 @@ func (r *DBRepository) RegisterUser(ctx context.Context, login, password string)
 	return &models.User{
 		ID: userID,
 		Login: login,
-		Password: string(hashedPassword),
+		Password: string(password),
 		CreatedAt: time.Now(),
 	}, nil
 }
