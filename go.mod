@@ -2,6 +2,8 @@ module my-go-server
 
 go 1.25.1
 
+require golang.org/x/crypto v0.51.0
+
 require (
 	github.com/jinzhu/gorm v1.9.16 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
