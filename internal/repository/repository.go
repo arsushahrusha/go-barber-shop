@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"my-go-server/internal/models"
 	dbrepo "my-go-server/internal/repository/db"
 )
 
@@ -20,4 +21,15 @@ func (r *Repository) GetMessage(ctx context.Context) (string, error) {
 func (r *Repository) SaveMessage(ctx context.Context, value string) (int, error) {
 	return r.db.SaveMessage(ctx, value)
 }
-	
+
+func (r *Repository) RegisterUser(ctx context.Context, login, password string) (*models.User, error) {
+	return r.db.RegisterUser(ctx, login, password)
+}
+
+func (r *Repository) GetUserByLogin(ctx context.Context, login string) (*models.User, error) {
+	return r.db.GetUserByLogin(ctx, login)
+}
+
+func (r *Repository) CreateSession(ctx context.Context, userID string) (*models.Session, error) {
+	return r.db.CreateSession(ctx, userID)
+}

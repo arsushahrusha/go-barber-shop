@@ -1,8 +1,12 @@
 package db
 
 import (
-	"github.com/jmoiron/sqlx"
 	"context"
+	"database/sql"
+	"fmt"
+	"my-go-server/internal/models"
+	"errors"
+	"github.com/jmoiron/sqlx"
 )
 
 type DBRepository struct {
@@ -24,3 +28,38 @@ func (r *DBRepository) SaveMessage(ctx context.Context, value string) (int, erro
 
 	return id, nil
 }
+
+func (r *DBRepository) RegisterUser(ctx context.Context, login, password string) (*models.User, error) {
+	var user models.User
+	err := r.db.GetContext(ctx, &user, registerUserQuery, login, password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to insert user: %w", err)
+	}
+
+	return &user, nil
+}
+
+func (r *DBRepository) GetUserByLogin(ctx context.Context, login string) (*models.User, error) {
+	var user models.User
+	err := r.db.GetContext(ctx, &user, getUserByLoginQuery, login)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	return &user, nil
+}
+ 
+func (r *DBRepository) CreateSession(ctx context.Context, userID string) (*models.Session, error) {
+	var session models.Session
+
+	err := r.db.GetContext(ctx, &session, createSessionQuery, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create session: %w", err)
+	}
+
+	return &session, nil
+}
+
+
