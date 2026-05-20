@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"my-go-server/internal/models"
-	"time"
 	"errors"
 	"github.com/jmoiron/sqlx"
 )
@@ -31,41 +30,36 @@ func (r *DBRepository) SaveMessage(ctx context.Context, value string) (int, erro
 }
 
 func (r *DBRepository) RegisterUser(ctx context.Context, login, password string) (*models.User, error) {
-	var userID string
-	err := r.db.GetContext(ctx, &userID, registerUserQuery, login, password)
+	var user models.User
+	err := r.db.GetContext(ctx, &user, registerUserQuery, login, password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert user: %w", err)
 	}
 
-	return &models.User{
-		ID: userID,
-		Login: login,
-		Password: string(password),
-		CreatedAt: time.Now(),
-	}, nil
+	return &user, nil
 }
 
 func (r *DBRepository) GetUserByLogin(ctx context.Context, login string) (*models.User, error) {
-	user := &models.User{}
-	err := r.db.GetContext(ctx, user, getUserByLoginQuery, login)
+	var user models.User
+	err := r.db.GetContext(ctx, &user, getUserByLoginQuery, login)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
-	return user, nil
+	return &user, nil
 }
  
 func (r *DBRepository) CreateSession(ctx context.Context, userID string) (*models.Session, error) {
-	session := &models.Session{}
+	var session models.Session
 
-	_, err := r.db.ExecContext(ctx, createSessionQuery, session, userID)
+	err := r.db.GetContext(ctx, &session, createSessionQuery, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	return session, nil
+	return &session, nil
 }
 
 

@@ -37,6 +37,15 @@ func Run() {
 	defer postgresDB.Close()
 
 	dbrepo := database.NewDBRepository(postgresDB)
+
+	initCtx, initCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer initCancel()
+
+	if err := dbrepo.InitTables(initCtx); err != nil {
+		log.Fatalf("failed to init database tables: %s", err.Error())
+	}
+
+
 	repo := repository.NewRepository(dbrepo)
 	uc := usecase.NewService(repo)
 	h := handler.NewHandler(uc)
