@@ -62,4 +62,32 @@ func (r *DBRepository) CreateSession(ctx context.Context, userID string) (*model
 	return &session, nil
 }
 
+func (r *DBRepository) CreateOrder(ctx context.Context, userID string) (*models.Order, error) {
+	var order models.Order
+
+	err := r.db.GetContext(ctx, &order, createOrderQuery, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create order: %w", err)
+	}
+
+	return &order, nil
+}
+
+func (r *DBRepository) GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error) {
+	var orders []*models.Order
+
+	query := getOrdersByUserIDQuery
+
+	if activeOnly {
+		query = getActiveOrdersByUserIDQuery
+	}
+
+	err := r.db.GetContext(ctx, &orders, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get orders: %w", err)
+	}
+
+	return orders, nil
+}
+
 
