@@ -2,16 +2,13 @@ package deliveryhttp
 
 import (
 	"context"
+	"my-go-server/internal/contextkeys"
 	"my-go-server/internal/jwt"
 	"net/http"
 	"strings"
 
 	"google.golang.org/genproto/googleapis/cloud/retail/v2"
 )
-
-type contextKey string
-
-const UserIDContextKey contextKey = "userID"
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +30,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserIDContextKey, claims.UserID)
+		ctx := context.WithValue(r.Context(), contextkeys.UserID, claims.UserID)
 		next(w, r.WithContext(ctx))
 	}
 }
