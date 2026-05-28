@@ -11,6 +11,9 @@ type Handler interface {
 	HandleDBTest() http.HandlerFunc
 	RegisterUser() http.HandlerFunc
 	LoginUser() http.HandlerFunc
+
+	AddNewOrder() http.HandlerFunc
+	GetOrdersList() http.HandlerFunc
 }
 
 type UseCase interface {
@@ -19,6 +22,9 @@ type UseCase interface {
 	RegisterUser(ctx context.Context, login, password string) (*models.User, error)
 	GetUserByLogin(ctx context.Context, login string) (*models.User, error)
 	CreateSession(ctx context.Context, userID string) (*models.Session, error)
+
+	CreateOrder(ctx context.Context, userID string) (*models.Order, error)
+	GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error)
 }
 
 type Repository interface {
@@ -27,4 +33,7 @@ type Repository interface {
 	RegisterUser(ctx context.Context, login, password string) (*models.User, error)
 	GetUserByLogin(ctx context.Context, login string) (*models.User, error)
 	CreateSession(ctx context.Context, userID string) (*models.Session, error)
+
+	CreateOrder(ctx context.Context, userID string) (*models.Order, error)
+	GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order)
 }
