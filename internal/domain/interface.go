@@ -35,5 +35,5 @@ type Repository interface {
 	CreateSession(ctx context.Context, userID string) (*models.Session, error)
 
 	CreateOrder(ctx context.Context, userID string) (*models.Order, error)
-	GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order)
+	GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error)
 }

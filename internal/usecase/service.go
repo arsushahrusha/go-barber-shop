@@ -59,3 +59,19 @@ func (s *Service) GetUserByLogin(ctx context.Context, login string) (*models.Use
 func (s *Service) CreateSession(ctx context.Context, userID string) (*models.Session, error) {
 	return s.repository.CreateSession(ctx, userID)
 }
+
+func (s *Service) CreateOrder(ctx context.Context, userID string) (*models.Order, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("userID is requires")
+	}
+
+	return s.repository.CreateOrder(ctx, userID)
+}
+
+func (s *Service) GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("userID is requires")
+	}
+
+	return s.repository.GetOrdersByUserID(ctx, userID, activeOnly)
+}
