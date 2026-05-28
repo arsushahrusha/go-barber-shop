@@ -6,8 +6,6 @@ import (
 	"my-go-server/internal/jwt"
 	"net/http"
 	"strings"
-
-	"google.golang.org/genproto/googleapis/cloud/retail/v2"
 )
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {

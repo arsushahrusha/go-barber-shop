@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"my-go-server/internal/contextkeys"
-	deliveryhttp "my-go-server/internal/delivery/http"
 	"my-go-server/internal/domain"
 	"my-go-server/internal/jwt"
 	"my-go-server/internal/models"
@@ -15,7 +14,6 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	"google.golang.org/genproto/googleapis/cloud/retail/v2"
 )
 
 type Handler struct {
@@ -215,7 +213,7 @@ func (h *Handler) AddNewOrder() http.HandlerFunc {
 		}
 
 		if req.Amount <= 0 {
-			http.Error(w, "amount is required and must be positive")
+			http.Error(w, "amount is required and must be positive", http.StatusBadRequest)
 		}
 
 		orderIDs := make([]string, 0, req.Amount)
@@ -269,7 +267,7 @@ func (h *Handler) GetOrdersList() http.HandlerFunc {
 
 		orders, err := h.uc.GetOrdersByUserID(r.Context(), userID, activeOnly)
 		if err != nil {
-			http.Error(w, "failed to get orders", http.StatusInternalServerError)
+			http.Error(w, "failed to get orders"+err.Error(), http.StatusInternalServerError)
 			return 
 		}
 

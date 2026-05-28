@@ -82,7 +82,7 @@ func (r *DBRepository) GetOrdersByUserID(ctx context.Context, userID string, act
 		query = getActiveOrdersByUserIDQuery
 	}
 
-	err := r.db.GetContext(ctx, &orders, query, userID)
+	err := r.db.SelectContext(ctx, &orders, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get orders: %w", err)
 	}

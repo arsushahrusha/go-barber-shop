@@ -28,7 +28,7 @@ const (
 	getOrdersByUserIDQuery = `
 		SELECT id, user_id, status, created_at, updated_at
 		FROM orders
-		WHERE user_id = $1 AND status NOT IN ('DONE', 'CANCELLED')
+		WHERE user_id = $1
 		ORDER BY created_at DESC
 	`
 
