@@ -33,3 +33,11 @@ func (r *Repository) GetUserByLogin(ctx context.Context, login string) (*models.
 func (r *Repository) CreateSession(ctx context.Context, userID string) (*models.Session, error) {
 	return r.db.CreateSession(ctx, userID)
 }
+
+func (r *Repository) CreateOrder(ctx context.Context, userID string) (*models.Order, error) {
+	return r.db.CreateOrder(ctx, userID)
+}
+
+func (r *Repository) GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error) {
+	return r.db.GetOrdersByUserID(ctx, userID, activeOnly)
+}

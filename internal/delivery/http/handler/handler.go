@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"my-go-server/internal/contextkeys"
 	"my-go-server/internal/domain"
 	"my-go-server/internal/jwt"
+	"my-go-server/internal/models"
 	"net/http"
+	"strconv"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -183,6 +186,102 @@ func (h *Handler) LoginUser() http.HandlerFunc {
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, "failed to encode response", http.StatusInternalServerError)
 			return
+		}
+	}
+}
+
+func (h *Handler) AddNewOrder() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		
+		if r.Method != http.MethodPost {
+			http.Error(w, "method is not allowed", http.StatusMethodNotAllowed)
+			return 
+		}
+
+		userID, ok := r.Context().Value(contextkeys.UserID).(string)
+		if !ok || userID == "" {
+			http.Error(w, "user not authentificated", http.StatusUnauthorized)
+			return
+		}
+
+		defer r.Body.Close()
+
+		var req models.CreateOrderRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "invalid request body", http.StatusBadRequest)
+			return 
+		}
+
+		if req.Amount <= 0 {
+			http.Error(w, "amount is required and must be positive", http.StatusBadRequest)
+		}
+
+		orderIDs := make([]string, 0, req.Amount)
+
+		for i:=0; i < req.Amount; i++ {
+			order, err := h.uc.CreateOrder(r.Context(), userID)
+			if err != nil {
+				http.Error(w, "Failed to create order", http.StatusInternalServerError)
+				return
+			}
+
+			orderIDs = append(orderIDs, order.ID)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		responce := models.CreateOrderResponse{
+			OrderIDs: orderIDs,
+		}
+
+		if err := json.NewEncoder(w).Encode(responce); err != nil {
+			http.Error(w, "failed to encode responce", http.StatusInternalServerError)
+			return 
+		}
+	}
+}
+
+func (h *Handler) GetOrdersList() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method is not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		userID, ok := r.Context().Value(contextkeys.UserID).(string)
+		if !ok || userID == ""  {
+			http.Error(w, "user not authenticated", http.StatusUnauthorized)
+			return 
+		}
+
+		activeOnly := false
+		activeParam := r.URL.Query().Get("active")
+		if activeParam != "" {
+			value, err := strconv.ParseBool(activeParam)
+			if err != nil {
+				http.Error(w, "invalid active query param", http.StatusBadRequest)
+				return 
+			}
+			activeOnly = value
+		}
+
+		orders, err := h.uc.GetOrdersByUserID(r.Context(), userID, activeOnly)
+		if err != nil {
+			http.Error(w, "failed to get orders"+err.Error(), http.StatusInternalServerError)
+			return 
+		}
+
+		response := models.OrdersListResponse{
+			Count: len(orders),
+			Items: orders,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		if err:=json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "failed to encode response", http.StatusInternalServerError)
+			return 
 		}
 	}
 }

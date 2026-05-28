@@ -18,4 +18,25 @@ const (
 		VALUES ($1, NOW() + INTERVAL '24 hours')
 		RETURNING session_id, user_id, created_at, expires_at
 	`
+
+	createOrderQuery = `
+		INSERT INTO orders (user_id, status)
+		VALUES ($1, 'CREATED')
+		RETURNING id, user_id, status, created_at, updated_at
+	`
+
+	getOrdersByUserIDQuery = `
+		SELECT id, user_id, status, created_at, updated_at
+		FROM orders
+		WHERE user_id = $1
+		ORDER BY created_at DESC
+	`
+
+	getActiveOrdersByUserIDQuery = `
+		SELECT id, user_id, status, created_at, updated_at
+		FROM orders
+		WHERE user_id = $1 AND status NOT IN ('DONE', 'CANCELLED')
+		ORDER BY created_at DESC
+	`
+
 )

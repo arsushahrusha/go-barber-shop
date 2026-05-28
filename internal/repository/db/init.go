@@ -33,6 +33,15 @@ func (r *DBRepository) InitTables(ctx context.Context) error {
 			expires_at TIMESTAMPTZ NOT NULL
 		);
 		`,
+		`
+		CREATE TABLE IF NOT EXISTS orders (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			status TEXT NOT NULL DEFAULT 'CREATED',
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		);
+		`,
 	}
 
 	for _, query := range queries {
