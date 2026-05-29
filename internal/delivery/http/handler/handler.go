@@ -214,6 +214,7 @@ func (h *Handler) AddNewOrder() http.HandlerFunc {
 
 		if req.Amount <= 0 {
 			http.Error(w, "amount is required and must be positive", http.StatusBadRequest)
+			return 
 		}
 
 		orderIDs := make([]string, 0, req.Amount)

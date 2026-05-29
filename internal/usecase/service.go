@@ -75,3 +75,19 @@ func (s *Service) GetOrdersByUserID(ctx context.Context, userID string, activeOn
 
 	return s.repository.GetOrdersByUserID(ctx, userID, activeOnly)
 }
+
+func (s *Service) GetSessionByUserID(ctx context.Context, userID string) (*models.Session, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("userID is requires")
+	}
+
+	return s.repository.GetSessionByUserID(ctx, userID)
+}
+
+func (s *Service) UpdateSessionExpiry(ctx context.Context, sessionID string) error {
+	if sessionID == "" {
+		return fmt.Errorf("sessionID is requires")
+	}
+
+	return s.repository.UpdateSessionExpiry(ctx, sessionID)
+}

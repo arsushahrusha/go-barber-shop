@@ -53,7 +53,7 @@ func Run() {
 
 	srv := http.Server{
 		Addr: ":"+cfg.Server.Port,
-		Handler: deliveryhttp.SetupRoutes(h),
+		Handler: deliveryhttp.SetupRoutes(h, uc),
 	}
 
 
