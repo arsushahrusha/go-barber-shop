@@ -25,6 +25,9 @@ type UseCase interface {
 
 	CreateOrder(ctx context.Context, userID string) (*models.Order, error)
 	GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error)
+
+	GetSessionByUserID(ctx context.Context, userID string) (*models.Session, error)
+	UpdateSessionExpiry(ctx context.Context, sessionID string) error
 }
 
 type Repository interface {
@@ -36,4 +39,7 @@ type Repository interface {
 
 	CreateOrder(ctx context.Context, userID string) (*models.Order, error)
 	GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error)
+
+	GetSessionByUserID(ctx context.Context, userID string) (*models.Session, error)
+	UpdateSessionExpiry(ctx context.Context, sessionID string) error
 }
