@@ -41,3 +41,11 @@ func (r *Repository) CreateOrder(ctx context.Context, userID string) (*models.Or
 func (r *Repository) GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error) {
 	return r.db.GetOrdersByUserID(ctx, userID, activeOnly)
 }
+
+func (r *Repository) GetSessionByUserID(ctx context.Context, userID string) (*models.Session, error) {
+	return r.db.GetSessionsByUserID(ctx, userID)
+}
+
+func (r *Repository) UpdateSessionExpiry(ctx context.Context, sessionID string) (error) {
+	return r.db.UpdateSessionExpiry(ctx, sessionID)
+}
