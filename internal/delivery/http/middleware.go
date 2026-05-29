@@ -3,12 +3,22 @@ package deliveryhttp
 import (
 	"context"
 	"my-go-server/internal/contextkeys"
+	"my-go-server/internal/domain"
 	"my-go-server/internal/jwt"
 	"net/http"
 	"strings"
+	"time"
 )
 
-func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
+type MiddleWareManager struct {
+	uc domain.UseCase
+}
+
+func NewMiddlewareManager(uc domain.UseCase) *MiddleWareManager {
+	return &MiddleWareManager{uc: uc}
+}
+
+func (m *MiddleWareManager) JWTMiddleware (next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -30,5 +40,33 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		ctx := context.WithValue(r.Context(), contextkeys.UserID, claims.UserID)
 		next(w, r.WithContext(ctx))
+	}
+}
+
+func (m *MiddleWareManager) SessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, ok := r.Context().Value(contextkeys.UserID).(string)
+		if !ok || userID == "" {
+			http.Error(w, "user not authenticated", http.StatusUnauthorized)
+			return 
+		}
+
+		session, err := m.uc.GetSessionByUserID(r.Context(), userID)
+		if err != nil {
+			http.Error(w, "failed to get session", http.StatusUnauthorized)
+			return 
+		}
+
+		if time.Now().After(session.ExpiresAt) {
+			http.Error(w, "session expired, please log in again", http.StatusUnauthorized)
+			return 
+		}
+
+		if err := m.uc.UpdateSessionExpiry(r.Context(), session.SessionID); err != nil {
+			http.Error(w, "failed to update session", http.StatusInternalServerError)
+			return 
+		}
+
+		next(w, r)
 	}
 }
