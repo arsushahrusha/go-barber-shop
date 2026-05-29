@@ -39,4 +39,18 @@ const (
 		ORDER BY created_at DESC
 	`
 
+	getSessionByUserIDQuery = `
+		SELECT session_id, user_id, created_at, expires_at
+		FROM sessions
+		WHERE user_id = $1
+		ORDER BY created_At DESC
+		LiMIT 1
+	`
+
+	updateSessionExpiryQuery = `
+		UPDATE sessions
+		SET expires_at = NOW() + INTERVAL '24 hours'
+		WHERE session_id = $1
+	`
+
 )
