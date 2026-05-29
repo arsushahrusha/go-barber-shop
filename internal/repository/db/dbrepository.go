@@ -90,4 +90,35 @@ func (r *DBRepository) GetOrdersByUserID(ctx context.Context, userID string, act
 	return orders, nil
 }
 
+func (r *DBRepository) GetSessionsByUserID(ctx context.Context, userID string) (*models.Session, error) {
+	var session models.Session
+
+	err := r.db.GetContext(ctx, &session, getSessionByUserIDQuery, userID)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get session: %w", err)
+	}
+
+	return &session, nil
+}
+
+func (r *DBRepository) UpdateSessionExpiry(ctx context.Context, sessionID string) error {
+	result, err := r.db.ExecContext(ctx, updateSessionExpiryQuery, sessionID)
+
+	if err != nil {
+		return fmt.Errorf("failed to uodate session expiry: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if rowsAffected == 0 {
+        return sql.ErrNoRows
+    }
+
+	return nil
+}
+
 
