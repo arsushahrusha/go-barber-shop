@@ -65,7 +65,17 @@ func (s *Service) CreateOrder(ctx context.Context, userID string) (*models.Order
 		return nil, fmt.Errorf("userID is requires")
 	}
 
-	return s.repository.CreateOrder(ctx, userID)
+	order, err := s.repository.CreateOrder(ctx, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.repository.PublishNewOrder(ctx, order.ID); err != nil {
+		return nil, fmt.Errorf("order created, but failed to publish new order event: %w", err)
+	}
+
+	return order, nil
 }
 
 func (s *Service) GetOrdersByUserID(ctx context.Context, userID string, activeOnly bool) ([]*models.Order, error) {
@@ -90,4 +100,22 @@ func (s *Service) UpdateSessionExpiry(ctx context.Context, sessionID string) err
 	}
 
 	return s.repository.UpdateSessionExpiry(ctx, sessionID)
+}
+
+func (s *Service) ChangeOrderStatus(ctx context.Context, orderID, status string) error {
+	if orderID == "" {
+		return fmt.Errorf("orderID is required")
+	}
+
+	if status == "" {
+		return fmt.Errorf("status is required")
+	}
+
+	switch status {
+	case "CREATED", "PROCESSING", "CONFIRMED", "CANCELLED", "DONE":
+	default:
+		return fmt.Errorf("invalid status: %s", status)
+	}
+
+	return s.repository.ChangeOrderStatus(ctx, orderID, status)
 }
