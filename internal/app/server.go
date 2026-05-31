@@ -8,6 +8,7 @@ import (
 	"my-go-server/internal/config"
 	deliveryhttp "my-go-server/internal/delivery/http"
 	"my-go-server/internal/delivery/http/handler"
+	"my-go-server/internal/rabbitmq"
 	"my-go-server/internal/repository"
 	database "my-go-server/internal/repository/db"
 	"my-go-server/internal/usecase"
@@ -45,11 +46,36 @@ func Run() {
 		log.Fatalf("failed to init database tables: %s", err.Error())
 	}
 
+	rabbitClient, err := rabbitmq.New(cfg.RabbitMQ.URL)
+	if err != nil {
+		log.Fatalf("failed to connect rabbitmq: %s", err.Error())
+	}
+	defer rabbitClient.Close()
 
-	repo := repository.NewRepository(dbrepo)
+	if err := rabbitClient.DeclareQueue(cfg.RabbitMQ.NewOrderQueue); err != nil {
+		log.Fatalf("failed to declare new orders queue: %s", err.Error())
+	}
+
+	if err := rabbitClient.DeclareQueue(cfg.RabbitMQ.StatusQueue); err != nil {
+		log.Fatalf("failed to declare status queue: %s", err.Error())
+	}
+
+
+	repo := repository.NewRepository(
+		dbrepo,
+		rabbitClient,
+		cfg.RabbitMQ.NewOrderQueue,
+		cfg.RabbitMQ.StatusQueue,
+	)
 	uc := usecase.NewService(repo)
 	h := handler.NewHandler(uc)
-	 
+	
+	appCtx, appCancel := context.WithCancel(context.Background())
+	defer appCancel()
+
+	repo.StartStatusChangeConsumer(appCtx, func(orderID, status string) error {
+		return uc.ChangeOrderStatus(appCtx, orderID, status)
+	})
 
 	srv := http.Server{
 		Addr: ":"+cfg.Server.Port,

@@ -57,6 +57,11 @@ func (m *MiddleWareManager) SessionMiddleware(next http.HandlerFunc) http.Handle
 			return 
 		}
 
+		if session == nil {
+			http.Error(w, "session not found", http.StatusUnauthorized)
+			return 
+		}
+
 		if time.Now().After(session.ExpiresAt) {
 			http.Error(w, "session expired, please log in again", http.StatusUnauthorized)
 			return 

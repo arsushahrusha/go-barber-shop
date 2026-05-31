@@ -109,7 +109,7 @@ func (r *DBRepository) UpdateSessionExpiry(ctx context.Context, sessionID string
 	result, err := r.db.ExecContext(ctx, updateSessionExpiryQuery, sessionID)
 
 	if err != nil {
-		return fmt.Errorf("failed to uodate session expiry: %w", err)
+		return fmt.Errorf("failed to update session expiry: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -121,4 +121,22 @@ func (r *DBRepository) UpdateSessionExpiry(ctx context.Context, sessionID string
 	return nil
 }
 
+func (r *DBRepository) ChangeOrderStatus(ctx context.Context, orderID, status string) error {
+	result, err := r.db.ExecContext(ctx, changeOrderStatusQuery, orderID, status)
+
+	if err != nil {
+		return fmt.Errorf("failed to change %s order status: %w", orderID, err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to check affected rows: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
 
