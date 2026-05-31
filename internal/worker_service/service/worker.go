@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"math/rand"
+	//"math/rand"
 	"sync"
 	"time"
 
@@ -68,7 +68,7 @@ func (p *WorkerPool) worker(ctx context.Context, workerID int) {
 func (p *WorkerPool) processOrder(ctx context.Context, workerID int, orderID string) error {
 	fmt.Printf("worker %d started processing order %s\n", workerID, orderID)
 
-	processingTime := time.Duration(rand.Intn(4)+1)*time.Second
+	processingTime := time.Duration(5+1)*time.Second
 
 	select {
 	case <-time.After(processingTime):
@@ -78,7 +78,7 @@ func (p *WorkerPool) processOrder(ctx context.Context, workerID int, orderID str
 
 	status := "CONFIRMED"
 
-	if err := p.repo.PublishNewOrderStatus(ctx, orderID, status); err != nil {
+	if err := p.repo.PublishOrderStatus(ctx, orderID, status); err != nil {
 		return err
 	}
 

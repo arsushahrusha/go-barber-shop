@@ -92,6 +92,7 @@ func (r *Repository) StartStatusChangeConsumer(
 	deliveries, err := r.rabbitmq.Consume(r.statusQueue)
 	if err != nil {
 		fmt.Printf("failed to start status consumer: %v", err)
+		return
 	}
 
 	go func ()  {

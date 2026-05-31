@@ -109,7 +109,7 @@ func (r *DBRepository) UpdateSessionExpiry(ctx context.Context, sessionID string
 	result, err := r.db.ExecContext(ctx, updateSessionExpiryQuery, sessionID)
 
 	if err != nil {
-		return fmt.Errorf("failed to uodate session expiry: %w", err)
+		return fmt.Errorf("failed to update session expiry: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()

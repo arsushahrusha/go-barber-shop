@@ -56,7 +56,7 @@ func New() (*Config, error) {
 		RabbitMQ: RabbitMQConfig{
 			URL: os.Getenv("RABBITMQ_URL"),
 			NewOrderQueue: os.Getenv("RABBITMQ_NEW_ORDERS_QUEUE"),
-			StatusQueue: os.Getenv("RABBITMQ_NEW_ORDERS_QUEUE"),
+			StatusQueue: os.Getenv("RABBITMQ_STATUS_QUEUE"),
 		},
 		Worker: WorkerConfig{
 			WorkersCount: workerCount,

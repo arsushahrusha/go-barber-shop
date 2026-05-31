@@ -69,7 +69,7 @@ func (r *RabbitRepository) StartNewOrdersConsumer(
 	} ()
 }
 
-func (r *RabbitRepository) PublishNewOrderStatus(ctx context.Context, orderID, status string) error {
+func (r *RabbitRepository) PublishOrderStatus(ctx context.Context, orderID, status string) error {
 	msg := models.OrderStatusChangedMessage{
 		OrderID: orderID,
 		Status: status,
@@ -81,7 +81,7 @@ func (r *RabbitRepository) PublishNewOrderStatus(ctx context.Context, orderID, s
 		return fmt.Errorf("failed to marshal new order message: %w", err)
 	}
 
-	if err := r.rabbit.Publish(ctx, r.newOrderQueue, body); err != nil {
+	if err := r.rabbit.Publish(ctx, r.statusQueue, body); err != nil {
 		return fmt.Errorf("failed to publish new order: %w", err)
 	}
 
