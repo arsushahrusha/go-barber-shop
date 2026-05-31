@@ -29,9 +29,9 @@ type UseCase interface {
 	GetSessionByUserID(ctx context.Context, userID string) (*models.Session, error)
 	UpdateSessionExpiry(ctx context.Context, sessionID string) error
 
-	PublishNewOrder(ctx context.Context, orderId string) error
+	//PublishNewOrder(ctx context.Context, orderId string) error
 	ChangeOrderStatus(ctx context.Context, orderID string, status string) error
-	StartStatusChangeConsumer(ctx context.Context)
+	//StartStatusChangeConsumer(ctx context.Context)
 }
 
 type Repository interface {
