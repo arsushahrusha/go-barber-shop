@@ -78,7 +78,7 @@ func (p *WorkerPool) processOrder(ctx context.Context, workerID int, orderID str
 
 	status := "CONFIRMED"
 
-	if err := p.repo.PublishOrderStatus(ctx, orderID, status); err != nil {
+	if err := p.repo.PublishNewOrderStatus(ctx, orderID, status); err != nil {
 		return err
 	}
 
