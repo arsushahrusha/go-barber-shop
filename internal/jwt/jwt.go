@@ -2,17 +2,27 @@ package jwt
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	gojwt "github.com/dgrijalva/jwt-go"
 )
 
-var secret = []byte("your-secret-key")
+// var secret = []byte("your-secret-key")
 
 type Claims struct {
 	UserID string `json:"user_id"`
 	Login  string `json:"login"`
 	gojwt.StandardClaims
+}
+
+func getSecret() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		secret = "dev-secret-key"
+	}
+
+	return []byte(secret)
 }
 
 func GenerateToken(userID, login string) (string, error) {
@@ -26,7 +36,7 @@ func GenerateToken(userID, login string) (string, error) {
 	}
 
 	token := gojwt.NewWithClaims(gojwt.SigningMethodHS256, claims)
-	return token.SignedString(secret)
+	return token.SignedString(getSecret())
 }
 
 func ValidateToken(tokenString string) (*Claims, error) {
@@ -35,7 +45,7 @@ func ValidateToken(tokenString string) (*Claims, error) {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
 
-		return secret, nil
+		return getSecret(), nil
 	})
 	if err != nil {
 		return nil, err

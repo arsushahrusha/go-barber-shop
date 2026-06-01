@@ -9,11 +9,14 @@ import (
 type Handler interface {
 	Handle() http.HandlerFunc
 	HandleDBTest() http.HandlerFunc
+	
 	RegisterUser() http.HandlerFunc
 	LoginUser() http.HandlerFunc
 
 	AddNewOrder() http.HandlerFunc
 	GetOrdersList() http.HandlerFunc
+
+	Health() http.HandlerFunc
 }
 
 type UseCase interface {

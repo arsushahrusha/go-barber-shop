@@ -10,6 +10,8 @@ func SetupRoutes(handler domain.Handler, uc domain.UseCase) http.Handler {
 
 	middlewareManager := NewMiddlewareManager(uc)
 
+	mux.HandleFunc("/health", handler.Health())
+
 	mux.HandleFunc("/test", handler.Handle())
 	mux.HandleFunc("/dbtest", handler.HandleDBTest())
 	mux.HandleFunc("/auth/register", handler.RegisterUser())
@@ -31,5 +33,7 @@ func SetupRoutes(handler domain.Handler, uc domain.UseCase) http.Handler {
 				),
 			),
 		)
+
+
 	return mux
 }
