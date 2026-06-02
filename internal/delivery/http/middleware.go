@@ -5,6 +5,7 @@ import (
 	"my-go-server/internal/contextkeys"
 	"my-go-server/internal/domain"
 	"my-go-server/internal/jwt"
+	"my-go-server/internal/response"
 	"net/http"
 	"strings"
 	"time"
@@ -18,23 +19,23 @@ func NewMiddlewareManager(uc domain.UseCase) *MiddleWareManager {
 	return &MiddleWareManager{uc: uc}
 }
 
-func (m *MiddleWareManager) JWTMiddleware (next http.HandlerFunc) http.HandlerFunc {
+func (m *MiddleWareManager) JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			http.Error(w, "missing authorization header", http.StatusUnauthorized)
+			response.Error(w, http.StatusUnauthorized, "missing authorization header")
 			return
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			http.Error(w, "invalid authorization header", http.StatusUnauthorized)
+			response.Error(w, http.StatusUnauthorized, "invalid authorization header")
 			return
 		}
 
 		claims, err := jwt.ValidateToken(parts[1])
 		if err != nil {
-			http.Error(w, "invalid token", http.StatusUnauthorized)
+			response.Error(w, http.StatusUnauthorized, "invalid token")
 			return
 		}
 
@@ -47,29 +48,29 @@ func (m *MiddleWareManager) SessionMiddleware(next http.HandlerFunc) http.Handle
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := r.Context().Value(contextkeys.UserID).(string)
 		if !ok || userID == "" {
-			http.Error(w, "user not authenticated", http.StatusUnauthorized)
-			return 
+			response.Error(w, http.StatusUnauthorized, "user not authenticated")
+			return
 		}
 
 		session, err := m.uc.GetSessionByUserID(r.Context(), userID)
 		if err != nil {
-			http.Error(w, "failed to get session", http.StatusUnauthorized)
-			return 
+			response.Error(w, http.StatusUnauthorized, "failed to get session")
+			return
 		}
 
 		if session == nil {
-			http.Error(w, "session not found", http.StatusUnauthorized)
-			return 
+			response.Error(w, http.StatusUnauthorized, "session not found")
+			return
 		}
 
 		if time.Now().After(session.ExpiresAt) {
-			http.Error(w, "session expired, please log in again", http.StatusUnauthorized)
-			return 
+			response.Error(w, http.StatusUnauthorized, "session expired, please log in again")
+			return
 		}
 
 		if err := m.uc.UpdateSessionExpiry(r.Context(), session.SessionID); err != nil {
-			http.Error(w, "failed to update session", http.StatusInternalServerError)
-			return 
+			response.Error(w, http.StatusInternalServerError, "failed to update session")
+			return
 		}
 
 		next(w, r)
